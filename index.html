@@ -1,1 +1,218 @@
-hi
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Create and customize your political campaign profile pictures with our easy-to-use frame generator.">
+  <meta name="author" content="Ferry Ayunda and GitHub contributors">
+  <meta name="generator" content="Campaign Frame Generator 1.0">
+  <title>Political Campaign Frame Generator</title>
+  <link rel="canonical" href="https://bungferry.github.io/campaign-frame-generator/">
+
+  <!-- Bootstrap core CSS -->
+  <link href="css/main.css" rel="stylesheet">
+
+  <!-- Favicons -->
+  <link rel="icon" href="favicon.ico" type="image/x-icon">
+  <meta name="theme-color" content="#669ada">
+
+  <style>
+    .bd-placeholder-img {
+      font-size: 1.125rem;
+      text-anchor: middle;
+      user-select: none;
+    }
+
+    @media (min-width: 768px) {
+      .bd-placeholder-img-lg {
+        font-size: 3.5rem;
+      }
+    }
+
+    button, label, canvas, div {
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: Yaldevi;
+      font-size: 14px;
+    }
+
+    #upload-image {
+      position: absolute;
+      left: -10000px;
+    }
+
+    #preview {
+      border: 1px solid #eee;
+      margin: 10px 0;
+      background: #eee;
+      width: 100%;
+    }
+	.frame-selection {
+		display: flex;
+		overflow-x: auto;
+		white-space: nowrap;
+	}
+
+    .frame-option {
+      padding: 10px;
+      line-height: 0;
+      width: 25%;
+      background: transparent;
+      border: 0;
+	  flex: 0 0 auto;
+	  margin-right: 10px; /* Adjust spacing between buttons */
+	  
+    }
+
+    .frame-option:focus {
+      border: 1px solid #669ada;
+      outline: none;
+      position: relative;
+      padding: 9px;
+      border-radius: 10px;
+    }
+
+    .frame-option img {
+      border-radius: 5px;
+      background-image: url(img/profile.png);
+      background-size: 100% 100%;
+      pointer-events: none;
+	  display: block;
+    }
+
+    .frame-option:not(:first-child) {
+      margin-left: -1px;
+    }
+
+    .wrapper {
+      width: 100%;
+      padding: 10px;
+      max-width: 360px;
+      min-width: 240px;
+      margin: 0 auto;
+    }
+
+    .action {
+      font-size: 13px;
+      text-decoration: none;
+      cursor: pointer;
+      color: #669ada;
+      padding: 10px 20px;
+      border-radius: 50px;
+      border: 1px solid;
+      display: block;
+      text-align: center;
+    }
+
+    .action[href=''] {
+      display: none;
+    }
+
+    .buttons {
+      flex-wrap: wrap;
+      display: flex;
+      margin-bottom: 10px;
+    }
+
+    .slider-container {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 20px;
+      width: 100%;
+    }
+
+    #zoom-slider {
+      width: 70%;
+      margin: 0 15px;
+    }
+  </style>
+</head>
+<body>
+
+
+  <main>
+    <div class="container py-4">
+      <header class="pb-3 mb-4 border-bottom">
+        <a href="/" class="d-flex align-items-center text-dark text-decoration-none">
+          <img src="img/logo.png" alt="Logo" width="50" height="40">
+          <span class="fs-4">Frame your profile pics</span>
+        </a>
+      </header>
+
+      <div class="container">
+        <p class="lead">ඔබ නිර්මාණය කල frames හෝ නිර්මාණය කිරීමට අදහස් ඇත්නම් අපවෙත එවන්න. මෙතනින් </p>
+
+        <div class="wrapper">
+          <label class="action">
+            <input type="file" id="upload-image" accept="image/*">
+            Choose your image
+          </label><br>
+          <div id="frame-container">
+            <canvas id="canvas"></canvas>
+            <img id="frame-image" src="frame1.png" alt="Frame Image" style="display: none;">
+          </div>
+          <div class="frame-selection">
+            <button type="button" class="frame-option" data-frame="./frame-01.png">
+              <img src="./frame-01.png" width="100%" alt="Frame 1">
+            </button>
+            <button type="button" class="frame-option" data-frame="./frame-02.png">
+              <img src="./frame-02.png" width="100%" alt="Frame 2">
+            </button>
+            <button type="button" class="frame-option" data-frame="./frame-03.png">
+              <img src="./frame-03.png" width="100%" alt="Frame 3">
+            </button>
+            <button type="button" class="frame-option" data-frame="./frame-01.png">
+              <img src="./frame-01.png" width="100%" alt="Frame 1">
+            </button>
+            <button type="button" class="frame-option" data-frame="./frame-02.png">
+              <img src="./frame-02.png" width="100%" alt="Frame 2">
+            </button>
+            <button type="button" class="frame-option" data-frame="./frame-03.png">
+              <img src="./frame-03.png" width="100%" alt="Frame 3">
+            </button>
+            <button type="button" class="frame-option" data-frame="./frame-01.png">
+              <img src="./frame-01.png" width="100%" alt="Frame 1">
+            </button>
+            <button type="button" class="frame-option" data-frame="./frame-02.png">
+              <img src="./frame-02.png" width="100%" alt="Frame 2">
+            </button>
+            <button type="button" class="frame-option" data-frame="./frame-03.png">
+              <img src="./frame-03.png" width="100%" alt="Frame 3">
+            </button>
+          </div><br>
+          <div id="controls">
+            <div class="slider-container">
+              <label for="zoom-slider">Zoom</label>
+              <input type="range" id="zoom-slider" min="0.1" max="2" value="1" step="0.01">
+            </div>
+            <div id="ad-container" style="display: none;">
+              <!-- Example Ad Code: Replace with actual ad script -->
+              <script async src="https://example.com/ad-script.js"></script>
+              <p>Ad Placeholder</p>
+            </div>
+            <button id="download" class="action">Download</button>
+          </div>
+        </div>
+
+        <!-- Your like button code -->
+        <div class="text-center">
+          <div class="fb-like" data-href="https://www.facebook.com/bungferry.wa" data-width="100" data-layout="standard" data-action="like" data-size="small" data-share="true"></div>
+        </div>
+      </div>
+
+      <footer class="pt-3 mt-4 text-muted border-top">
+        Follow us on <b style="color: #f45;"><a href="https://www.facebook.com/profile.php?id=61563885964529&mibextid=ZbWKwL" class="text-decoration-none">Facebook</a></b>
+      </footer>
+    </div>
+  </main>
+
+  <!-- Bootstrap JS and dependencies -->
+  <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.3/dist/umd/popper.min.js"></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+  <script src="FileSaver.min.js"></script>
+</body>
+</html>
