@@ -369,23 +369,11 @@ document.getElementById('zoomSlider').addEventListener('input', function() {
 
 // Add watermark and download the image
 document.getElementById('downloadButton').addEventListener('click', function() {
-    const watermark = new Image();
-    watermark.src = 'https://via.placeholder.com/150x50?text=Watermark'; // Replace with your watermark image URL
-
-    watermark.onload = function() {
-        drawLayers(); // Draw the current canvas layers first
-        ctx.drawImage(watermark, canvas.width - watermark.width - 10, canvas.height - watermark.height - 10); // Add watermark
-
-
     // Trigger download after watermark is drawn
     const link = document.createElement('a');
     link.download = 'quote.png';
     link.href = canvas.toDataURL('image/png'); // Ensure it's in 'image/png' format
     link.click();
-}
-    watermark.onerror = function() {
-        console.error('Failed to load watermark image.');
-    };
 });
 
 
