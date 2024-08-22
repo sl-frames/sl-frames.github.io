@@ -38,22 +38,20 @@
         .slider-container {
             margin-bottom: 20px;
         }
-		.border {
-    border: 1px solid #ddd;
-    border-radius: 4px;
-}
-
-.p-3 {
-    padding: 1rem;
-}
-
-.mb-3 {
-    margin-bottom: 1rem;
-}
-
-.canvas-layer-group, .background-settings-group, .text-settings-group, .image-upload-group {
-    background-color: #f9f9f9;
-}
+        .border {
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        .p-3 {
+            padding: 1rem;
+        }
+        .mb-3 {
+            margin-bottom: 1rem;
+        }
+        .canvas-layer-group, .background-settings-group, .text-settings-group, .image-upload-group {
+            background-color: #f9f9f9;
+        }
+        @import url('https://fonts.googleapis.com/css2?family=Yaldevi:wght@400;700&family=Arial:wght@400;700&family=Courier+New:wght@400;700&family=Georgia:wght@400;700&family=Times+New+Roman:wght@400;700&family=Verdana:wght@400;700&display=swap');
     </style>
 </head>
 <body class="container my-4">
@@ -100,7 +98,7 @@
                 <div class="mb-3">
                     <label for="fontSelector" class="form-label">Select Font:</label>
                     <select id="fontSelector" class="form-select">
-						<option value="Yaldevi">Yaldevi</option>
+                        <option value="Yaldevi">Yaldevi</option>
                         <option value="Arial">Arial</option>
                         <option value="Courier New">Courier New</option>
                         <option value="Georgia">Georgia</option>
@@ -123,241 +121,266 @@
         </div>
     </div>
 
-       <script>
-        const canvas = document.getElementById('quoteCanvas');
-        const ctx = canvas.getContext('2d');
-        let layers = []; // Store layers (text/images)
-        let selectedLayer = null;
-        let isDragging = false;
-        let dragOffsetX = 0;
-        let dragOffsetY = 0;
+    <script>
+const canvas = document.getElementById('quoteCanvas');
+const ctx = canvas.getContext('2d');
+let layers = []; // Store layers (text/images)
+let selectedLayer = null;
+let isDragging = false;
+let dragOffsetX = 0;
+let dragOffsetY = 0;
 
-        // Clear the canvas
-        function clearCanvas() {
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-        }
+// Clear the canvas
+function clearCanvas() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+}
 
-        // Draw all layers on the canvas
-        function drawLayers() {
-            clearCanvas();
-            layers.forEach(layer => {
-                if (layer.type === 'color') {
-                    ctx.fillStyle = layer.color;
-                    ctx.fillRect(0, 0, canvas.width, canvas.height);
-                } else if (layer.type === 'image') {
-                    ctx.drawImage(layer.image, layer.x, layer.y, layer.width * layer.scale, layer.height * layer.scale);
-                } else if (layer.type === 'text') {
-                    ctx.font = `${layer.fontSize * layer.scale}px ${layer.fontFamily}`;
-                    ctx.fillStyle = layer.color;
-                    const lines = layer.text.split('\n');
-                    lines.forEach((line, i) => {
-                        ctx.fillText(line, layer.x, layer.y + i * layer.fontSize * layer.scale);
-                    });
-                }
+// Draw all layers on the canvas
+function drawLayers() {
+    clearCanvas();
+    layers.forEach(layer => {
+        if (layer.type === 'color') {
+            ctx.fillStyle = layer.color;
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+        } else if (layer.type === 'image') {
+            ctx.drawImage(layer.image, layer.x, layer.y, layer.width * layer.scale, layer.height * layer.scale);
+        } else if (layer.type === 'text') {
+            ctx.font = `${layer.fontSize * layer.scale}px ${layer.fontFamily}`;
+            ctx.fillStyle = layer.color;
+            const lines = layer.text.split('\n');
+            lines.forEach((line, i) => {
+                ctx.fillText(line, layer.x, layer.y + i * layer.fontSize * layer.scale);
             });
         }
+    });
+}
 
-        // Update the layer panel
-        function updateLayerPanel() {
-            const panel = document.getElementById('layerPanel');
-            panel.innerHTML = ''; // Clear previous items
-            layers.forEach((layer, index) => {
-                const layerItem = document.createElement('div');
-                layerItem.classList.add('layer-item');
-                if (selectedLayer === index) {
-                    layerItem.classList.add('selected');
-                }
-                layerItem.textContent = layer.type === 'image' ? `Image ${index + 1}` : `Text: ${layer.text.substring(0, 10)}...`;
-                layerItem.draggable = true;
-
-                const deleteButton = document.createElement('button');
-                deleteButton.textContent = 'Delete';
-                deleteButton.classList.add('btn', 'btn-danger', 'btn-sm', 'ms-2');
-                deleteButton.addEventListener('click', function() {
-                    layers.splice(index, 1);
-                    selectedLayer = null;
-                    updateLayerPanel();
-                    drawLayers();
-                });
-
-                // Event listener for selecting a layer
-                layerItem.addEventListener('click', function() {
-                    selectLayer(index);
-                });
-
-                // Drag and drop functionality to reorder layers
-                layerItem.addEventListener('dragstart', function(e) {
-                    e.dataTransfer.setData('text/plain', index);
-                });
-
-                layerItem.addEventListener('dragover', function(e) {
-                    e.preventDefault();
-                });
-
-                layerItem.addEventListener('drop', function(e) {
-                    e.preventDefault();
-                    const draggedLayerIndex = e.dataTransfer.getData('text/plain');
-                    if (draggedLayerIndex !== index) {
-                        layers.splice(index, 0, layers.splice(draggedLayerIndex, 1)[0]);
-                        updateLayerPanel();
-                        drawLayers();
-                    }
-                });
-
-                layerItem.appendChild(deleteButton);
-                panel.appendChild(layerItem);
-            });
+// Update the layer panel
+function updateLayerPanel() {
+    const panel = document.getElementById('layerPanel');
+    panel.innerHTML = ''; // Clear previous items
+    layers.forEach((layer, index) => {
+        const layerItem = document.createElement('div');
+        layerItem.classList.add('layer-item');
+        if (selectedLayer === index) {
+            layerItem.classList.add('selected');
         }
+        layerItem.textContent = layer.type === 'image' ? `Image ${index + 1}` : `Text: ${layer.text.substring(0, 10)}...`;
+        layerItem.draggable = true;
 
-        // Select a layer
-        function selectLayer(index) {
-            selectedLayer = index;
+        const deleteButton = document.createElement('button');
+        deleteButton.textContent = 'Delete';
+        deleteButton.classList.add('btn', 'btn-danger', 'btn-sm', 'ms-2');
+        deleteButton.addEventListener('click', function() {
+            layers.splice(index, 1);
+            selectedLayer = null;
             updateLayerPanel();
-            updateZoomSlider();
-        }
-
-        // Update the zoom slider based on the selected layer
-        function updateZoomSlider() {
-            if (selectedLayer !== null) {
-                const layer = layers[selectedLayer];
-                document.getElementById('zoomSlider').value = layer.scale;
-            }
-        }
-
-        // Background color picker
-        document.getElementById('bgColorPicker').addEventListener('input', function() {
-            layers[0] = {
-                type: 'color',
-                color: this.value
-            };
             drawLayers();
         });
 
-        // Background image uploader
-        document.getElementById('bgImageUploader').addEventListener('change', function(event) {
-            const file = event.target.files[0];
-            if (file) {
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    const img = new Image();
-                    img.src = e.target.result;
-                    img.onload = function() {
-                        layers[0] = {
-                            type: 'image',
-                            image: img,
-                            x: 0,
-                            y: 0,
-                            width: canvas.width,
-                            height: canvas.height,
-                            scale: 1
-                        };
-                        drawLayers();
-                        updateLayerPanel();
-                    };
-                };
-                reader.readAsDataURL(file);
+        // Event listener for selecting a layer
+        layerItem.addEventListener('click', function() {
+            selectLayer(index);
+        });
+
+        // Drag and drop functionality to reorder layers
+        layerItem.addEventListener('dragstart', function(e) {
+            e.dataTransfer.setData('text/plain', index);
+        });
+
+        layerItem.addEventListener('dragover', function(e) {
+            e.preventDefault();
+        });
+
+        layerItem.addEventListener('drop', function(e) {
+            e.preventDefault();
+            const draggedLayerIndex = e.dataTransfer.getData('text/plain');
+            if (draggedLayerIndex !== index) {
+                layers.splice(index, 0, layers.splice(draggedLayerIndex, 1)[0]);
+                updateLayerPanel();
+                drawLayers();
             }
         });
 
-        // Add image button
-        document.getElementById('addImageButton').addEventListener('click', function() {
-            const file = document.getElementById('imageUploader').files[0];
-            if (file) {
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    const img = new Image();
-                    img.src = e.target.result;
-                    img.onload = function() {
-                        const layer = {
-                            type: 'image',
-                            image: img,
-                            x: 100, // Default position
-                            y: 100,
-                            width: img.width / 2, // Default size
-                            height: img.height / 2,
-                            scale: 1
-                        };
-                        layers.push(layer);
-                        drawLayers();
-                        updateLayerPanel();
-                    };
-                };
-                reader.readAsDataURL(file);
-            }
-        });
+        layerItem.appendChild(deleteButton);
+        panel.appendChild(layerItem);
+    });
+}
 
-        // Add text button
-        document.getElementById('addTextButton').addEventListener('click', function() {
-            const text = document.getElementById('textInput').value;
-            const color = document.getElementById('textColorPicker').value;
-            const fontFamily = document.getElementById('fontSelector').value;
-            if (text) {
+// Select a layer
+function selectLayer(index) {
+    selectedLayer = index;
+    updateLayerPanel();
+    updateZoomSlider();
+}
+
+// Update the zoom slider based on the selected layer
+function updateZoomSlider() {
+    if (selectedLayer !== null) {
+        const layer = layers[selectedLayer];
+        document.getElementById('zoomSlider').value = layer.scale;
+    }
+}
+
+// Get canvas coordinates from touch or mouse events
+function getCanvasCoordinates(event) {
+    const rect = canvas.getBoundingClientRect();
+    const clientX = event.clientX || event.touches[0].clientX;
+    const clientY = event.clientY || event.touches[0].clientY;
+    return {
+        x: clientX - rect.left,
+        y: clientY - rect.top
+    };
+}
+
+// Handle pointer down (mouse/touch)
+function onPointerDown(event) {
+    if (selectedLayer !== null) {
+        const layer = layers[selectedLayer];
+        const { x, y } = getCanvasCoordinates(event);
+
+        if (layer.type === 'image' || layer.type === 'text') {
+            isDragging = true;
+            dragOffsetX = x - layer.x;
+            dragOffsetY = y - layer.y;
+        }
+    }
+    event.preventDefault(); // Prevent scrolling while dragging
+}
+
+// Handle pointer move (mouse/touch)
+function onPointerMove(event) {
+    if (isDragging && selectedLayer !== null) {
+        const layer = layers[selectedLayer];
+        const { x, y } = getCanvasCoordinates(event);
+
+        layer.x = x - dragOffsetX;
+        layer.y = y - dragOffsetY;
+        drawLayers();
+    }
+    event.preventDefault(); // Prevent scrolling while dragging
+}
+
+// Handle pointer up (mouse/touch)
+function onPointerUp() {
+    isDragging = false;
+}
+
+// Event listeners for mouse and touch events
+canvas.addEventListener('mousedown', onPointerDown);
+canvas.addEventListener('mousemove', onPointerMove);
+canvas.addEventListener('mouseup', onPointerUp);
+canvas.addEventListener('touchstart', onPointerDown, { passive: false });
+canvas.addEventListener('touchmove', onPointerMove, { passive: false });
+canvas.addEventListener('touchend', onPointerUp, { passive: false });
+
+// Background color picker
+document.getElementById('bgColorPicker').addEventListener('input', function() {
+    layers[0] = {
+        type: 'color',
+        color: this.value
+    };
+    drawLayers();
+});
+
+// Background image uploader
+document.getElementById('bgImageUploader').addEventListener('change', function(event) {
+    const file = event.target.files[0];
+    if (file) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            const img = new Image();
+            img.src = e.target.result;
+            img.onload = function() {
+                layers[0] = {
+                    type: 'image',
+                    image: img,
+                    x: 0,
+                    y: 0,
+                    width: canvas.width,
+                    height: canvas.height,
+                    scale: 1
+                };
+                drawLayers();
+                updateLayerPanel();
+            };
+        };
+        reader.readAsDataURL(file);
+    }
+});
+
+// Add image button
+document.getElementById('addImageButton').addEventListener('click', function() {
+    const file = document.getElementById('imageUploader').files[0];
+    if (file) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            const img = new Image();
+            img.src = e.target.result;
+            img.onload = function() {
                 const layer = {
-                    type: 'text',
-                    text: text,
-                    x: 100,
-                    y: 200,
-                    color: color,
-                    fontSize: 30,
-                    fontFamily: fontFamily,
+                    type: 'image',
+                    image: img,
+                    x: 100, // Default position
+                    y: 100,
+                    width: img.width / 2, // Default size
+                    height: img.height / 2,
                     scale: 1
                 };
                 layers.push(layer);
                 drawLayers();
                 updateLayerPanel();
-            }
-        });
-
-        // Zoom slider functionality
-        document.getElementById('zoomSlider').addEventListener('input', function() {
-            if (selectedLayer !== null) {
-                const layer = layers[selectedLayer];
-                layer.scale = parseFloat(this.value);
-                drawLayers();
-            }
-        });
-
-        // Canvas mouse events for dragging
-        canvas.addEventListener('mousedown', function(event) {
-            if (selectedLayer !== null) {
-                const layer = layers[selectedLayer];
-                const mouseX = event.offsetX;
-                const mouseY = event.offsetY;
-
-                if (layer.type === 'image' || layer.type === 'text') {
-                    isDragging = true;
-                    dragOffsetX = mouseX - layer.x;
-                    dragOffsetY = mouseY - layer.y;
-                }
-            }
-        });
-
-        canvas.addEventListener('mousemove', function(event) {
-            if (isDragging && selectedLayer !== null) {
-                const layer = layers[selectedLayer];
-                layer.x = event.offsetX - dragOffsetX;
-                layer.y = event.offsetY - dragOffsetY;
-                drawLayers();
-            }
-        });
-
-        canvas.addEventListener('mouseup', function() {
-            isDragging = false;
-        });
-
-        // Add watermark and download the image
-        document.getElementById('downloadButton').addEventListener('click', function() {
-            const watermark = new Image();
-            watermark.src = 'https://via.placeholder.com/150x50?text=Watermark'; // Replace with your watermark image URL
-            watermark.onload = function() {
-                drawLayers();
-                ctx.drawImage(watermark, canvas.width - watermark.width - 10, canvas.height - watermark.height - 10);
-                const link = document.createElement('a');
-                link.download = 'quote.png';
-                link.href = canvas.toDataURL();
-                link.click();
             };
-        });
+        };
+        reader.readAsDataURL(file);
+    }
+});
+
+// Add text button
+document.getElementById('addTextButton').addEventListener('click', function() {
+    const text = document.getElementById('textInput').value;
+    const color = document.getElementById('textColorPicker').value;
+    const fontFamily = document.getElementById('fontSelector').value;
+    if (text) {
+        const layer = {
+            type: 'text',
+            text: text,
+            x: 100,
+            y: 200,
+            color: color,
+            fontSize: 30,
+            fontFamily: fontFamily,
+            scale: 1
+        };
+        layers.push(layer);
+        drawLayers();
+        updateLayerPanel();
+    }
+});
+
+// Zoom slider functionality
+document.getElementById('zoomSlider').addEventListener('input', function() {
+    if (selectedLayer !== null) {
+        const layer = layers[selectedLayer];
+        layer.scale = parseFloat(this.value);
+        drawLayers();
+    }
+});
+
+// Add watermark and download the image
+document.getElementById('downloadButton').addEventListener('click', function() {
+    const watermark = new Image();
+    watermark.src = 'https://via.placeholder.com/150x50?text=Watermark'; // Replace with your watermark image URL
+    watermark.onload = function() {
+        drawLayers();
+        ctx.drawImage(watermark, canvas.width - watermark.width - 10, canvas.height - watermark.height - 10);
+        const link = document.createElement('a');
+        link.download = 'quote.png';
+        link.href = canvas.toDataURL();
+        link.click();
+    };
+});
+
     </script>
-	</body>
+</body>
 </html>
