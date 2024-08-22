@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quote Maker</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        #canvasContainer {
+            position: relative;
+            width: 100%;
+            border: 2px solid #000;
+            margin-bottom: 20px;
+        }
+        #quoteCanvas {
+            width: 100%;
+            height: 100%;
+        }
+        .layer-item {
+            padding: 5px;
+            cursor: pointer;
+            background-color: #f8f9fa;
+            border: 1px solid #ccc;
+            margin-bottom: 5px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .layer-item.selected {
+            background-color: #e9ecef;
+        }
+        .layer-panel {
+            max-height: 300px;
+            overflow-y: auto;
+            border: 1px solid #ddd;
+            padding: 10px;
+        }
+        .slider-container {
+            margin-bottom: 20px;
+        }
+		.border {
+    border: 1px solid #ddd;
+    border-radius: 4px;
+}
+
+.p-3 {
+    padding: 1rem;
+}
+
+.mb-3 {
+    margin-bottom: 1rem;
+}
+
+.canvas-layer-group, .background-settings-group, .text-settings-group, .image-upload-group {
+    background-color: #f9f9f9;
+}
+    </style>
+</head>
+<body class="container my-4">
+    <div class="row">
+        <!-- Main Canvas and Controls -->
+        <div class="col-md-9">
+            <!-- Canvas and Layer Panel Group -->
+            <div class="canvas-layer-group border p-3 mb-3">
+                <div id="canvasContainer">
+                    <canvas id="quoteCanvas" width="1000" height="1000"></canvas>
+                </div>
+                <div class="slider-container mt-3">
+                    <label for="zoomSlider" class="form-label">Zoom:</label>
+                    <input type="range" id="zoomSlider" min="0.5" max="3" step="0.1" value="1" class="form-range">
+                </div>
+                <div class="layer-panel mt-3" id="layerPanel"></div>
+            </div>
+        </div>
+
+        <!-- Control Panel -->
+        <div class="col-md-3">
+            <!-- Background Settings Group -->
+            <div class="background-settings-group border p-3 mb-3">
+                <div class="mb-3">
+                    <label for="bgColorPicker" class="form-label">Background Color:</label>
+                    <input type="color" id="bgColorPicker" class="form-control form-control-color">
+                </div>
+                <div class="mb-3">
+                    <label for="bgImageUploader" class="form-label">Upload Background Image:</label>
+                    <input type="file" id="bgImageUploader" accept="image/*" class="form-control">
+                </div>
+            </div>
+
+            <!-- Text Settings Group -->
+            <div class="text-settings-group border p-3 mb-3">
+                <div class="mb-3">
+                    <label for="textInput" class="form-label">Enter Text:</label>
+                    <textarea id="textInput" class="form-control" rows="3" placeholder="Enter your quote here..."></textarea>
+                </div>
+                <div class="mb-3">
+                    <label for="textColorPicker" class="form-label">Text Color:</label>
+                    <input type="color" id="textColorPicker" class="form-control form-control-color">
+                </div>
+                <div class="mb-3">
+                    <label for="fontSelector" class="form-label">Select Font:</label>
+                    <select id="fontSelector" class="form-select">
+						<option value="Yaldevi">Yaldevi</option>
+                        <option value="Arial">Arial</option>
+                        <option value="Courier New">Courier New</option>
+                        <option value="Georgia">Georgia</option>
+                        <option value="Times New Roman">Times New Roman</option>
+                        <option value="Verdana">Verdana</option>
+                    </select>
+                </div>
+                <button id="addTextButton" class="btn btn-primary mb-3">Add Text</button>
+            </div>
+
+            <!-- Image Upload Group -->
+            <div class="image-upload-group border p-3 mb-3">
+                <div class="mb-3">
+                    <label for="imageUploader" class="form-label">Upload Image:</label>
+                    <input type="file" id="imageUploader" accept="image/*" multiple class="form-control">
+                </div>
+                <button id="addImageButton" class="btn btn-primary mb-3">Add Image</button>
+                <button id="downloadButton" class="btn btn-success">Download</button>
+            </div>
+        </div>
+    </div>
+
+       <script>
+        const canvas = document.getElementById('quoteCanvas');
+        const ctx = canvas.getContext('2d');
+        let layers = []; // Store layers (text/images)
+        let selectedLayer = null;
+        let isDragging = false;
+        let dragOffsetX = 0;
+        let dragOffsetY = 0;
+
+        // Clear the canvas
+        function clearCanvas() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+        }
+
+        // Draw all layers on the canvas
+        function drawLayers() {
+            clearCanvas();
+            layers.forEach(layer => {
+                if (layer.type === 'color') {
+                    ctx.fillStyle = layer.color;
+                    ctx.fillRect(0, 0, canvas.width, canvas.height);
+                } else if (layer.type === 'image') {
+                    ctx.drawImage(layer.image, layer.x, layer.y, layer.width * layer.scale, layer.height * layer.scale);
+                } else if (layer.type === 'text') {
+                    ctx.font = `${layer.fontSize * layer.scale}px ${layer.fontFamily}`;
+                    ctx.fillStyle = layer.color;
+                    const lines = layer.text.split('\n');
+                    lines.forEach((line, i) => {
+                        ctx.fillText(line, layer.x, layer.y + i * layer.fontSize * layer.scale);
+                    });
+                }
+            });
+        }
+
+        // Update the layer panel
+        function updateLayerPanel() {
+            const panel = document.getElementById('layerPanel');
+            panel.innerHTML = ''; // Clear previous items
+            layers.forEach((layer, index) => {
+                const layerItem = document.createElement('div');
+                layerItem.classList.add('layer-item');
+                if (selectedLayer === index) {
+                    layerItem.classList.add('selected');
+                }
+                layerItem.textContent = layer.type === 'image' ? `Image ${index + 1}` : `Text: ${layer.text.substring(0, 10)}...`;
+                layerItem.draggable = true;
+
+                const deleteButton = document.createElement('button');
+                deleteButton.textContent = 'Delete';
+                deleteButton.classList.add('btn', 'btn-danger', 'btn-sm', 'ms-2');
+                deleteButton.addEventListener('click', function() {
+                    layers.splice(index, 1);
+                    selectedLayer = null;
+                    updateLayerPanel();
+                    drawLayers();
+                });
+
+                // Event listener for selecting a layer
+                layerItem.addEventListener('click', function() {
+                    selectLayer(index);
+                });
+
+                // Drag and drop functionality to reorder layers
+                layerItem.addEventListener('dragstart', function(e) {
+                    e.dataTransfer.setData('text/plain', index);
+                });
+
+                layerItem.addEventListener('dragover', function(e) {
+                    e.preventDefault();
+                });
+
+                layerItem.addEventListener('drop', function(e) {
+                    e.preventDefault();
+                    const draggedLayerIndex = e.dataTransfer.getData('text/plain');
+                    if (draggedLayerIndex !== index) {
+                        layers.splice(index, 0, layers.splice(draggedLayerIndex, 1)[0]);
+                        updateLayerPanel();
+                        drawLayers();
+                    }
+                });
+
+                layerItem.appendChild(deleteButton);
+                panel.appendChild(layerItem);
+            });
+        }
+
+        // Select a layer
+        function selectLayer(index) {
+            selectedLayer = index;
+            updateLayerPanel();
+            updateZoomSlider();
+        }
+
+        // Update the zoom slider based on the selected layer
+        function updateZoomSlider() {
+            if (selectedLayer !== null) {
+                const layer = layers[selectedLayer];
+                document.getElementById('zoomSlider').value = layer.scale;
+            }
+        }
+
+        // Background color picker
+        document.getElementById('bgColorPicker').addEventListener('input', function() {
+            layers[0] = {
+                type: 'color',
+                color: this.value
+            };
+            drawLayers();
+        });
+
+        // Background image uploader
+        document.getElementById('bgImageUploader').addEventListener('change', function(event) {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const img = new Image();
+                    img.src = e.target.result;
+                    img.onload = function() {
+                        layers[0] = {
+                            type: 'image',
+                            image: img,
+                            x: 0,
+                            y: 0,
+                            width: canvas.width,
+                            height: canvas.height,
+                            scale: 1
+                        };
+                        drawLayers();
+                        updateLayerPanel();
+                    };
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+
+        // Add image button
+        document.getElementById('addImageButton').addEventListener('click', function() {
+            const file = document.getElementById('imageUploader').files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const img = new Image();
+                    img.src = e.target.result;
+                    img.onload = function() {
+                        const layer = {
+                            type: 'image',
+                            image: img,
+                            x: 100, // Default position
+                            y: 100,
+                            width: img.width / 2, // Default size
+                            height: img.height / 2,
+                            scale: 1
+                        };
+                        layers.push(layer);
+                        drawLayers();
+                        updateLayerPanel();
+                    };
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+
+        // Add text button
+        document.getElementById('addTextButton').addEventListener('click', function() {
+            const text = document.getElementById('textInput').value;
+            const color = document.getElementById('textColorPicker').value;
+            const fontFamily = document.getElementById('fontSelector').value;
+            if (text) {
+                const layer = {
+                    type: 'text',
+                    text: text,
+                    x: 100,
+                    y: 200,
+                    color: color,
+                    fontSize: 30,
+                    fontFamily: fontFamily,
+                    scale: 1
+                };
+                layers.push(layer);
+                drawLayers();
+                updateLayerPanel();
+            }
+        });
+
+        // Zoom slider functionality
+        document.getElementById('zoomSlider').addEventListener('input', function() {
+            if (selectedLayer !== null) {
+                const layer = layers[selectedLayer];
+                layer.scale = parseFloat(this.value);
+                drawLayers();
+            }
+        });
+
+        // Canvas mouse events for dragging
+        canvas.addEventListener('mousedown', function(event) {
+            if (selectedLayer !== null) {
+                const layer = layers[selectedLayer];
+                const mouseX = event.offsetX;
+                const mouseY = event.offsetY;
+
+                if (layer.type === 'image' || layer.type === 'text') {
+                    isDragging = true;
+                    dragOffsetX = mouseX - layer.x;
+                    dragOffsetY = mouseY - layer.y;
+                }
+            }
+        });
+
+        canvas.addEventListener('mousemove', function(event) {
+            if (isDragging && selectedLayer !== null) {
+                const layer = layers[selectedLayer];
+                layer.x = event.offsetX - dragOffsetX;
+                layer.y = event.offsetY - dragOffsetY;
+                drawLayers();
+            }
+        });
+
+        canvas.addEventListener('mouseup', function() {
+            isDragging = false;
+        });
+
+        // Add watermark and download the image
+        document.getElementById('downloadButton').addEventListener('click', function() {
+            const watermark = new Image();
+            watermark.src = 'https://via.placeholder.com/150x50?text=Watermark'; // Replace with your watermark image URL
+            watermark.onload = function() {
+                drawLayers();
+                ctx.drawImage(watermark, canvas.width - watermark.width - 10, canvas.height - watermark.height - 10);
+                const link = document.createElement('a');
+                link.download = 'quote.png';
+                link.href = canvas.toDataURL();
+                link.click();
+            };
+        });
+    </script>
+	</body>
+</html>
