@@ -30,6 +30,7 @@
 
     button, label, canvas, div {
       box-sizing: border-box;
+     
     }
 
     body {
@@ -43,25 +44,26 @@
     }
 
     #preview {
+      margin:auto;
       border: 1px solid #eee;
       margin: 10px 0;
-      background: #eee;
       width: 100%;
     }
 	.frame-selection {
+	    margin:auto;
 		display: flex;
 		overflow-x: auto;
 		white-space: nowrap;
 	}
 
     .frame-option {
+    margin:auto;
       padding: 10px;
       line-height: 0;
       width: 25%;
       background: transparent;
       border: 0;
 	  flex: 0 0 auto;
-	  margin-right: 10px; /* Adjust spacing between buttons */
 	  
     }
 
@@ -103,6 +105,8 @@
       border: 1px solid;
       display: block;
       text-align: center;
+      margin:auto;
+      margin-top:6px;
     }
 
     .action[href=''] {
@@ -157,33 +161,13 @@
             <button type="button" class="frame-option" data-frame="frames/frame-01.png">
               <img src="frames/frame-01.png" width="100%" alt="Frame 1">
             </button>
-            <button type="button" class="frame-option" data-frame="frames/frame-02.png">
-              <img src="frames/frame-02.png" width="100%" alt="Frame 2">
-            </button>
             <button type="button" class="frame-option" data-frame="frames/frame-03.png">
               <img src="frames/frame-03.png" width="100%" alt="Frame 3">
             </button>
-
-    <button type="button" class="frame-option" data-frame="frames/frame-08.png">
-        <img src="frames/frame-08.png" width="100%" alt="frame-08.png">
-    </button>
-                <button type="button" class="frame-option" data-frame="frames/frame-09.png">
-                    <img src="frames/frame-09.png" width="100%" alt="frame-09.png">
-                </button>
-                <button type="button" class="frame-option" data-frame="frames/frame-10.png">
-                    <img src="frames/frame-10.png" width="100%" alt="frame-10.png">
-                </button>
-                <button type="button" class="frame-option" data-frame="frames/frame-11.png">
-                    <img src="frames/frame-11.png" width="100%" alt="frame-11.png">
-                </button>
-                <button type="button" class="frame-option" data-frame="frames/frame-12.png">
-                    <img src="frames/frame-12.png" width="100%" alt="frame-12.png">
-                </button>
-    
-    
-    
-    
-              </div><br>
+            <button type="button" class="frame-option" data-frame="frames/frame-02.png">
+              <img src="frames/frame-02.png" width="100%" alt="Frame 2">
+            </button>
+          </div><br>
           <div id="controls">
             <div class="slider-container">
               <label for="zoom-slider">Zoom</label>
@@ -191,8 +175,8 @@
             </div>
             <div id="ad-container" style="display: none;">
             </div>
-            <button id="download" class="action">Download</button>
-    
+            <button id="download" class="action" style="width:100%;">Download Image</button>
+            <a  href= "/" class="action">Upload your frame</a>
           </div>
         </div>
       </div>
@@ -207,143 +191,6 @@
   <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.3/dist/umd/popper.min.js"></script>
   <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
-  <script>
-const canvas = document.getElementById('canvas');
-const ctx = canvas.getContext('2d');
-const frameImage = document.getElementById('frame-image');
-const uploadImage = document.getElementById('upload-image');
-const downloadButton = document.getElementById('download');
-const zoomSlider = document.getElementById('zoom-slider');
-const frameButtons = document.querySelectorAll('.frame-selection button');
-
-let img = new Image();
-let imgX = 0, imgY = 0, scale = 1;
-let imgWidth, imgHeight;
-let isDragging = false, startX, startY;
-
-uploadImage.addEventListener('change', e => {
-    const file = e.target.files[0];
-    const reader = new FileReader();
-    reader.onload = event => {
-        img.src = event.target.result;
-        img.onload = () => {
-            scale = 1;
-            zoomSlider.value = scale;
-            imgWidth = img.width;
-            imgHeight = img.height;
-            centerImage();
-            draw();
-        };
-    };
-    reader.readAsDataURL(file);
-});
-
-frameButtons.forEach(button => {
-    button.addEventListener('click', e => {
-        const newFrame = e.target.getAttribute('data-frame');
-        frameImage.src = newFrame;
-        draw();
-    });
-});
-
-function centerImage() {
-    const aspectRatio = imgWidth / imgHeight;
-    const canvasAspectRatio = canvas.width / canvas.height;
-    if (aspectRatio > canvasAspectRatio) {
-        imgWidth = canvas.width * scale;
-        imgHeight = (canvas.width / aspectRatio) * scale;
-    } else {
-        imgHeight = canvas.height * scale;
-        imgWidth = (canvas.height * aspectRatio) * scale;
-    }
-    imgX = (canvas.width - imgWidth) / 2;
-    imgY = (canvas.height - imgHeight) / 2;
-}
-
-function startDrag(event) {
-    isDragging = true;
-    const rect = canvas.getBoundingClientRect();
-    startX = (event.clientX || event.touches[0].clientX) - rect.left;
-    startY = (event.clientY || event.touches[0].clientY) - rect.top;
-    event.preventDefault();
-}
-
-function endDrag() {
-    isDragging = false;
-}
-
-function dragImage(event) {
-    if (isDragging) {
-        const rect = canvas.getBoundingClientRect();
-        const currentX = (event.clientX || (event.touches ? event.touches[0].clientX : 0)) - rect.left;
-        const currentY = (event.clientY || (event.touches ? event.touches[0].clientY : 0)) - rect.top;
-        imgX += currentX - startX;
-        imgY += currentY - startY;
-        startX = currentX;
-        startY = currentY;
-        draw();
-    }
-}
-
-canvas.addEventListener('mousedown', startDrag);
-canvas.addEventListener('mouseup', endDrag);
-canvas.addEventListener('mousemove', dragImage);
-canvas.addEventListener('touchstart', startDrag);
-canvas.addEventListener('touchend', endDrag);
-canvas.addEventListener('touchmove', dragImage);
-
-zoomSlider.addEventListener('input', () => {
-    scale = parseFloat(zoomSlider.value);
-    centerImage();
-    draw();
-});
-(function() {
-    const allowedDomain = "file:///C:/Users/Gavi/Downloads/sajith/SimpleProfilePicFramer-master/index.html";
-
-    if (window.location.origin !== allowedDomain) {
-        // Disable all JavaScript by removing all <script> elements
-        const scripts = document.getElementsByTagName('script');
-        for (let i = scripts.length - 1; i >= 0; i--) {
-            scripts[i].parentNode.removeChild(scripts[i]);
-        }
-    } 
-})();
-downloadButton.addEventListener('click', () => {
-    const downloadCanvas = document.createElement('canvas');
-    downloadCanvas.width = 1080;
-    downloadCanvas.height = 1080;
-    const downloadCtx = downloadCanvas.getContext('2d');
-
-    const scaleFactor = 1080 / canvas.width;
-    const downloadImgX = imgX * scaleFactor;
-    const downloadImgY = imgY * scaleFactor;
-    const downloadImgWidth = imgWidth * scaleFactor;
-    const downloadImgHeight = imgHeight * scaleFactor;
-
-    downloadCtx.clearRect(0, 0, 1080, 1080);
-    downloadCtx.drawImage(img, downloadImgX, downloadImgY, downloadImgWidth, downloadImgHeight);
-    downloadCtx.drawImage(frameImage, 0, 0, 1080, 1080);
-
-    downloadCanvas.toBlob(blob => saveAs(blob, 'image.png'), 'image/png');
-});
-
-function draw() {
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    ctx.drawImage(img, imgX, imgY, imgWidth, imgHeight);
-    ctx.drawImage(frameImage, 0, 0, canvas.width, canvas.height);
-}
-
-function resizeCanvas() {
-    const containerWidth = document.getElementById('frame-container').clientWidth;
-    canvas.width = containerWidth;
-    canvas.height = containerWidth;
-    centerImage();
-    draw();
-}
-
-window.addEventListener('resize', resizeCanvas);
-resizeCanvas();
-
-  </script>
+  <script src="FileSaver.min.js"></script>
 </body>
 </html>
